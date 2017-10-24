@@ -1,3 +1,4 @@
+# refer : https://github.com/mrzhu-cool/pix2pix-pytorch/blob/ba031e6040560c2b817f3cedf5eb40e5a9206ccb/train.py
 from __future__ import print_function
 import argparse
 import os
