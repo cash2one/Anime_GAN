@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from networks import define_G, define_D, GANLoss, print_network
+from Network import define_G, define_D, GANLoss, print_network
 from data import get_training_set, get_test_set
 import torch.backends.cudnn as cudnn
 
