@@ -9,7 +9,7 @@ def is_image_file(filename):
 
 def load_img(filepath):
     img = Image.open(filepath).convert('RGB')
-    img = img.resize((256, 256), Image.BICUBIC)
+    img = img.resize((1280, 720), Image.BICUBIC)
     return img
 
 
@@ -19,4 +19,4 @@ def save_img(image_tensor, filename):
     image_numpy = image_numpy.astype(np.uint8)
     image_pil = Image.fromarray(image_numpy)
     image_pil.save(filename)
-    #print("Image saved as {}").format(filename)
+    print("Image saved as {}".format(filename))
