@@ -1,4 +1,3 @@
-# refer : https://github.com/mrzhu-cool/pix2pix-pytorch/blob/ba031e6040560c2b817f3cedf5eb40e5a9206ccb/train.py
 from __future__ import print_function
 import argparse
 import os
@@ -9,77 +8,84 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from Network import define_G, define_D, GANLoss, print_network
+from networks import define_G, define_D, GANLoss, print_network
 from data import get_training_set, get_test_set
 import torch.backends.cudnn as cudnn
 
 # Training settings
-parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
-parser.add_argument('--dataset', required=True, help='facades')
-parser.add_argument('--batchSize', type=int, default=1, help='training batch size')
-parser.add_argument('--testBatchSize', type=int, default=1, help='testing batch size')
-parser.add_argument('--nEpochs', type=int, default=200, help='number of epochs to train for')
-parser.add_argument('--input_nc', type=int, default=3, help='input image channels')
-parser.add_argument('--output_nc', type=int, default=3, help='output image channels')
-parser.add_argument('--ngf', type=int, default=64, help='generator filters in first conv layer')
-parser.add_argument('--ndf', type=int, default=64, help='discriminator filters in first conv layer')
-parser.add_argument('--lr', type=float, default=0.0002, help='Learning Rate. Default=0.002')
-parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
-parser.add_argument('--cuda', action='store_true', help='use cuda?')
-parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
-parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
-parser.add_argument('--lamb', type=int, default=10, help='weight on L1 term in objective')
-opt = parser.parse_args()
+opt = None
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
+    #parser.add_argument('--dataset', required=True, help='facades')
+    parser.add_argument('--dataset', type=str, default='small_data', help='facades')
+    parser.add_argument('--batchSize', type=int, default=1, help='training batch size')
+    parser.add_argument('--testBatchSize', type=int, default=1, help='testing batch size')
+    parser.add_argument('--nEpochs', type=int, default=200, help='number of epochs to train for')
+    parser.add_argument('--input_nc', type=int, default=3, help='input image channels')
+    parser.add_argument('--output_nc', type=int, default=3, help='output image channels')
+    parser.add_argument('--ngf', type=int, default=64, help='generator filters in first conv layer')
+    parser.add_argument('--ndf', type=int, default=64, help='discriminator filters in first conv layer')
+    parser.add_argument('--lr', type=float, default=0.0002, help='Learning Rate. Default=0.002')
+    parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
+    #parser.add_argument('--cuda', action='store_true', help='use cuda?')
+    parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
+    parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
+    parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
+    parser.add_argument('--lamb', type=int, default=10, help='weight on L1 term in objective')
+    opt = parser.parse_args()
 
-print(opt)
+    print(opt)
 
-if opt.cuda and not torch.cuda.is_available():
-    raise Exception("No GPU found, please run without --cuda")
+    if opt.cuda and not torch.cuda.is_available():
+        raise Exception("No GPU found, please run without --cuda")
 
-cudnn.benchmark = True
+    cudnn.benchmark = True
 
-torch.manual_seed(opt.seed)
-if opt.cuda:
-    torch.cuda.manual_seed(opt.seed)
+    torch.manual_seed(opt.seed)
+    if opt.cuda:
+        torch.cuda.manual_seed(opt.seed)
 
-print('===> Loading datasets')
-root_path = "dataset/"
-train_set = get_training_set(root_path + opt.dataset)
-test_set = get_test_set(root_path + opt.dataset)
-training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=True)
-testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.testBatchSize, shuffle=False)
+    print('===> Loading datasets')
+    root_path = "dataset/"
+    train_set = get_training_set(root_path + opt.dataset)
+    test_set = get_test_set(root_path + opt.dataset)
+    training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize,
+                                      shuffle=True)
+    testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.testBatchSize,
+                                     shuffle=False)
 
-print('===> Building model')
-netG = define_G(opt.input_nc, opt.output_nc, opt.ngf, 'batch', False, [0])
-netD = define_D(opt.input_nc + opt.output_nc, opt.ndf, 'batch', False, [0])
+    print('===> Building model')
+    netG = define_G(opt.input_nc, opt.output_nc, opt.ngf, 'batch', False, [0])
+    netD = define_D(opt.input_nc + opt.output_nc, opt.ndf, 'batch', False, [0])
 
-criterionGAN = GANLoss()
-criterionL1 = nn.L1Loss()
-criterionMSE = nn.MSELoss()
+    criterionGAN = GANLoss()
+    criterionL1 = nn.L1Loss()
+    criterionMSE = nn.MSELoss()
 
-# setup optimizer
-optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
-optimizerD = optim.Adam(netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
+    # setup optimizer
+    optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
+    optimizerD = optim.Adam(netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 
-print('---------- Networks initialized -------------')
-print_network(netG)
-print_network(netD)
-print('-----------------------------------------------')
+    print('---------- Networks initialized -------------')
+    print_network(netG)
+    print_network(netD)
+    print('-----------------------------------------------')
 
-real_a = torch.FloatTensor(opt.batchSize, opt.input_nc, 256, 256)
-real_b = torch.FloatTensor(opt.batchSize, opt.output_nc, 256, 256)
+    real_a = torch.FloatTensor(opt.batchSize, opt.input_nc, 360,640)
+    #print(real_a)
+    real_b = torch.FloatTensor(opt.batchSize, opt.output_nc, 360, 640)
 
-if opt.cuda:
-    netD = netD.cuda()
-    netG = netG.cuda()
-    criterionGAN = criterionGAN.cuda()
-    criterionL1 = criterionL1.cuda()
-    criterionMSE = criterionMSE.cuda()
-    real_a = real_a.cuda()
-    real_b = real_b.cuda()
+    if opt.cuda:
+        netD = netD.cuda()
+        netG = netG.cuda()
+        criterionGAN = criterionGAN.cuda()
+        criterionL1 = criterionL1.cuda()
+        criterionMSE = criterionMSE.cuda()
+        real_a = real_a.cuda()
+        real_b = real_b.cuda()
 
-real_a = Variable(real_a)
-real_b = Variable(real_b)
+    real_a = Variable(real_a)
+    real_b = Variable(real_b)
 
 
 def train(epoch):
@@ -162,8 +168,10 @@ def checkpoint(epoch):
     print("Checkpoint saved to {}".format("checkpoint" + opt.dataset))
 
 
-for epoch in range(1, opt.nEpochs + 1):
-    train(epoch)
-    test()
-    if epoch % 50 == 0:
+if __name__ == '__main__':
+    for epoch in range(1, opt.nEpochs + 1):
+        train(epoch)
+        #test()
+        #if epoch % 50 == 0:
         checkpoint(epoch)
+        print("Epoch {} Finished".format(epoch))

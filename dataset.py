@@ -15,6 +15,7 @@ class DatasetFromFolder(data.Dataset):
         self.photo_path = join(image_dir, "a")
         self.sketch_path = join(image_dir, "b")
         self.image_filenames = [x for x in listdir(self.photo_path) if is_image_file(x)]
+        #print(self.image_filenames)
 
         transform_list = [transforms.ToTensor(),
                           transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]

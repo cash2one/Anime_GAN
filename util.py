@@ -9,7 +9,7 @@ def is_image_file(filename):
 
 def load_img(filepath):
     img = Image.open(filepath).convert('RGB')
-    img = img.resize((1280, 720), Image.BICUBIC)
+    img = img.resize((640, 360), Image.BICUBIC)
     return img
 
 
