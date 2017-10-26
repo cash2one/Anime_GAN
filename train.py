@@ -15,6 +15,7 @@ import torch.backends.cudnn as cudnn
 # Training settings
 opt = None
 if __name__ == '__main__':
+    #PID = os.getpid()
     parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
     #parser.add_argument('--dataset', required=True, help='facades')
     parser.add_argument('--dataset', type=str, default='small_data', help='facades')
@@ -55,8 +56,21 @@ if __name__ == '__main__':
                                      shuffle=False)
 
     print('===> Building model')
-    netG = define_G(opt.input_nc, opt.output_nc, opt.ngf, 'batch', False, [0])
-    netD = define_D(opt.input_nc + opt.output_nc, opt.ndf, 'batch', False, [0])
+    #------------------------------Code to continue training of the latest NN--------------------------#
+    net_filenames = [x for x in os.listdir('checkpoint/small_data/')]
+    Epoch_Num = 0
+    for i in range(1, 201):
+        if 'netG_model_epoch_{}.pth'.format(i) in net_filenames:
+            netG = torch.load('checkpoint/small_data/netG_model_epoch_{}.pth'.format(i))
+            netD = torch.load('checkpoint/small_data/netD_model_epoch_{}.pth'.format(i))
+            print(i)
+            Epoch_Num = i
+        else:
+            break
+    #------------------------------------------------------------------------------------------------#
+    if Epoch_Num == 0:
+        netG = define_G(opt.input_nc, opt.output_nc, opt.ngf, 'batch', False, [0])
+        netD = define_D(opt.input_nc + opt.output_nc, opt.ndf, 'batch', False, [0])
 
     criterionGAN = GANLoss()
     criterionL1 = nn.L1Loss()
@@ -169,7 +183,7 @@ def checkpoint(epoch):
 
 
 if __name__ == '__main__':
-    for epoch in range(1, opt.nEpochs + 1):
+    for epoch in range(Epoch_Num+1, opt.nEpochs + 1):
         train(epoch)
         #test()
         #if epoch % 50 == 0:
