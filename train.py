@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, default='small_data', help='facades')
     parser.add_argument('--batchSize', type=int, default=1, help='training batch size')
     parser.add_argument('--testBatchSize', type=int, default=1, help='testing batch size')
-    parser.add_argument('--nEpochs', type=int, default=200, help='number of epochs to train for')
+    parser.add_argument('--nEpochs', type=int, default=1000, help='number of epochs to train for')
     parser.add_argument('--input_nc', type=int, default=3, help='input image channels')
     parser.add_argument('--output_nc', type=int, default=3, help='output image channels')
     parser.add_argument('--ngf', type=int, default=64, help='generator filters in first conv layer')
@@ -67,7 +67,7 @@ if __name__ == '__main__':
             Epoch_Num = i
         else:
             break
-    #------------------------------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------------------------------#
     if Epoch_Num == 0:
         netG = define_G(opt.input_nc, opt.output_nc, opt.ngf, 'batch', False, [0])
         netD = define_D(opt.input_nc + opt.output_nc, opt.ndf, 'batch', False, [0])
@@ -184,6 +184,7 @@ def checkpoint(epoch):
 
 if __name__ == '__main__':
     for epoch in range(Epoch_Num+1, opt.nEpochs + 1):
+        #send error message by try-except
         train(epoch)
         #test()
         #if epoch % 50 == 0:

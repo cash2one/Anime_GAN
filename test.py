@@ -2,7 +2,7 @@
 from __future__ import print_function
 import argparse
 import os
-
+import psutil
 import torch
 from torch.autograd import Variable
 import torchvision.transforms as transforms
@@ -12,7 +12,7 @@ from util import is_image_file, load_img, save_img
 # Testing settings
 parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
 parser.add_argument('--dataset', type=str, default='small_data', help='facades')
-parser.add_argument('--model', type=str, default='checkpoint/small_data/netG_model_epoch_2.pth', help='model file to use')
+parser.add_argument('--model', type=str, default='checkpoint/small_data/netG_model_epoch_18.pth', help='model file to use')
 parser.add_argument('--cuda', action='store_true',default= True, help='use cuda')
 opt = parser.parse_args()
 print(opt)
@@ -41,4 +41,4 @@ for image_name in image_filenames:
     out_img = out.data[0]
     if not os.path.exists(os.path.join("result", opt.dataset)):
         os.mkdir(os.path.join("result", opt.dataset))
-    save_img(out_img, "result/{}/Epoch2/{}".format(opt.dataset, image_name))
+    save_img(out_img, "result/{}/Epoch18/{}".format(opt.dataset, image_name))
