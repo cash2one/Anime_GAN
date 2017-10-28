@@ -10,9 +10,20 @@ import torchvision.transforms as transforms
 from util import is_image_file, load_img, save_img
 
 # Testing settings
+
+#-----test latest NN----------#
+net_filenames = [x for x in os.listdir('checkpoint/small_data/')]
+EpochNumber = 0
+for i in range(1, 1000):
+    if 'netG_model_epoch_{}.pth'.format(i) in net_filenames:
+        EpochNumber = i
+    else:
+        break
+#EpochNumber = 30
+
 parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
 parser.add_argument('--dataset', type=str, default='small_data', help='facades')
-parser.add_argument('--model', type=str, default='checkpoint/small_data/netG_model_epoch_18.pth', help='model file to use')
+parser.add_argument('--model', type=str, default='checkpoint/small_data/netG_model_epoch_{}.pth'.format(EpochNumber), help='model file to use')
 parser.add_argument('--cuda', action='store_true',default= True, help='use cuda')
 opt = parser.parse_args()
 print(opt)
@@ -26,7 +37,8 @@ transform_list = [transforms.ToTensor(),
                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 
 transform = transforms.Compose(transform_list)
-
+if not os.path.exists(os.path.join("result", opt.dataset, 'Epoch{}'.format(EpochNumber))):
+    os.mkdir(os.path.join("result", opt.dataset, 'Epoch{}'.format(EpochNumber)))
 for image_name in image_filenames:
     img = load_img(image_dir + image_name)
     img = transform(img)
@@ -39,6 +51,5 @@ for image_name in image_filenames:
     out = netG(input)
     out = out.cpu()
     out_img = out.data[0]
-    if not os.path.exists(os.path.join("result", opt.dataset)):
-        os.mkdir(os.path.join("result", opt.dataset))
-    save_img(out_img, "result/{}/Epoch18/{}".format(opt.dataset, image_name))
+
+    save_img(out_img, "result/{}/{}/{}".format(opt.dataset, 'Epoch{}'.format(EpochNumber), image_name))

@@ -31,7 +31,7 @@ if __name__ == '__main__':
     #parser.add_argument('--cuda', action='store_true', help='use cuda?')
     parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
     parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
-    parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
+    parser.add_argument('--seed', type=int, default=124, help='random seed to use. Default=123')
     parser.add_argument('--lamb', type=int, default=10, help='weight on L1 term in objective')
     opt = parser.parse_args()
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     #------------------------------Code to continue training of the latest NN--------------------------#
     net_filenames = [x for x in os.listdir('checkpoint/small_data/')]
     Epoch_Num = 0
-    for i in range(1, 201):
+    for i in range(1, 10001):
         if 'netG_model_epoch_{}.pth'.format(i) in net_filenames:
             netG = torch.load('checkpoint/small_data/netG_model_epoch_{}.pth'.format(i))
             netD = torch.load('checkpoint/small_data/netD_model_epoch_{}.pth'.format(i))
