@@ -2,7 +2,7 @@ from __future__ import print_function
 import argparse
 import os
 from math import log10
-from multiprocessing import queues
+from multiprocessing import freeze_support
 
 import torch
 import torch.nn as nn
@@ -23,7 +23,7 @@ def InitNN():
     parser.add_argument('--dataset', type=str, default='small_data', help='facades')
     parser.add_argument('--batchSize', type=int, default=1, help='training batch size')
     parser.add_argument('--testBatchSize', type=int, default=1, help='testing batch size')
-    parser.add_argument('--nEpochs', type=int, default=1000, help='number of epochs to train for')
+    parser.add_argument('--nEpochs', type=int, default=10000, help='number of epochs to train for')
     parser.add_argument('--input_nc', type=int, default=3, help='input image channels')
     parser.add_argument('--output_nc', type=int, default=3, help='output image channels')
     parser.add_argument('--ngf', type=int, default=64, help='generator filters in first conv layer')
@@ -33,7 +33,7 @@ def InitNN():
     #parser.add_argument('--cuda', action='store_true', help='use cuda?')
     parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
     parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
-    parser.add_argument('--seed', type=int, default=124, help='random seed to use. Default=123')
+    parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
     parser.add_argument('--lamb', type=int, default=10, help='weight on L1 term in objective')
     opt = parser.parse_args()
 
@@ -109,7 +109,8 @@ def InitNN():
 def train(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD\
         ,netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt):
     D_LOSS_THRESHOLD=0.001
-    SET_CHANGE_THRESHOLD=10
+    D_LOSS_SUM=0
+    D_LOSS_COUNT=0
     COUNT=0
     for iteration, batch in enumerate(training_data_loader, 1):
         # forward
@@ -158,18 +159,18 @@ def train(epoch, training_data_loader, testing_data_loader, optimizerG, optimize
         loss_g.backward()
 
         optimizerG.step()
-        """
-        if loss_d.data[0] < D_LOSS_THRESHOLD:
-            COUNT += 1
-        else:
-            COUNT = 0
-        if COUNT > SET_CHANGE_THRESHOLD:
-            #train_manager에게 dataset 변환을 요구
-        """
         print("===> Epoch[{}]({}/{}): Loss_D: {:.4f} Loss_G: {:.4f}".format(
             epoch, iteration, len(training_data_loader), loss_d.data[0], loss_g.data[0]))
-    return training_data_loader, testing_data_loader, optimizerG, optimizerD \
-            , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b
+        # ----code for auto updating dataset-----#
+        D_LOSS_COUNT +=1
+        D_LOSS_SUM += loss_d.data[0]
+        print("AVG_D_LOSS:{}".format(D_LOSS_SUM/D_LOSS_COUNT))
+
+
+    CH_DATA = (D_LOSS_SUM/D_LOSS_COUNT < D_LOSS_THRESHOLD)
+    # ---------------------------------------#
+
+    return CH_DATA
 
 
 def test(training_data_loader, testing_data_loader, optimizerG, optimizerD\
@@ -186,8 +187,7 @@ def test(training_data_loader, testing_data_loader, optimizerG, optimizerD\
         psnr = 10 * log10(1 / mse.data[0])
         avg_psnr += psnr
     print("===> Avg. PSNR: {:.4f} dB".format(avg_psnr / len(testing_data_loader)))
-    return training_data_loader, testing_data_loader, optimizerG, optimizerD \
-            , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b
+
 
 
 def checkpoint(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD\
@@ -201,17 +201,18 @@ def checkpoint(epoch, training_data_loader, testing_data_loader, optimizerG, opt
     torch.save(netG, net_g_model_out_path)
     torch.save(netD, net_d_model_out_path)
     print("Checkpoint saved to {}".format("checkpoint" + opt.dataset))
-    return training_data_loader, testing_data_loader, optimizerG, optimizerD \
-            , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b
 
 
-if __name__ == '__main__':
+
+#if __name__ == '__main__':
+def ANIME_GAN(q):
     Epoch_Num, training_data_loader, testing_data_loader, optimizerG, optimizerD \
         , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt \
         = InitNN()
     for epoch in range(Epoch_Num+1, opt.nEpochs + 1):
         #send error message by try-except
-        train(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD
+        CH_DATA = \
+            train(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD
               , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt)
         #test(training_data_loader, testing_data_loader, optimizerG, optimizerD\
             #,netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b)
@@ -219,3 +220,13 @@ if __name__ == '__main__':
         checkpoint(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD
                    , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt)
         print("Epoch {} Finished".format(epoch))
+        if CH_DATA:
+            print('SEND MESSAGE to manager from trainer')
+            q.put('CHANGE_DATASET')
+            print('SENT MESSAGE to manager from trainer SUCCESS')
+    return Epoch_Num, training_data_loader, testing_data_loader, optimizerG, optimizerD \
+        , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt
+
+if __name__ == '__main__':
+    freeze_support()
+    ANIME_GAN()
