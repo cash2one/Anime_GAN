@@ -1,15 +1,17 @@
 import os
 import psutil
-import subprocess
+from multiprocessing import Process, Queue
 import time
+from train import InitNN, train, test, checkpoint
+from MakeClip import new_dataset
 
 net_filenames = [x for x in os.listdir('checkpoint/small_data/')]
 net_g_model = None
 net_d_model = None
 Epoch_Num = 0
-subprocess.Popen('{} train.py --threads 8'.format(
-    'C:\\Users\\JaeyoungJo\\AppData\\Local\\Continuum\\Anaconda3\\envs\\tensorflow\\python.exe'),close_fds=True)
-
+p = Process(target=InitNN)
+p.start()
+p.join()
 """
 while True:
     print(psutil.virtual_memory().percent)

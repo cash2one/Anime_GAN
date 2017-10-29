@@ -15,7 +15,8 @@ import torch.backends.cudnn as cudnn
 
 # Training settings
 opt = None
-if __name__ == '__main__':
+#if __name__ == '__main__':
+def InitNN():
     #PID = os.getpid()
     parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
     #parser.add_argument('--dataset', required=True, help='facades')
@@ -101,9 +102,12 @@ if __name__ == '__main__':
 
     real_a = Variable(real_a)
     real_b = Variable(real_b)
+    return Epoch_Num, training_data_loader, testing_data_loader, optimizerG, optimizerD\
+        ,netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt
 
 
-def train(epoch):
+def train(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD\
+        ,netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt):
     D_LOSS_THRESHOLD=0.001
     SET_CHANGE_THRESHOLD=10
     COUNT=0
@@ -164,9 +168,12 @@ def train(epoch):
         """
         print("===> Epoch[{}]({}/{}): Loss_D: {:.4f} Loss_G: {:.4f}".format(
             epoch, iteration, len(training_data_loader), loss_d.data[0], loss_g.data[0]))
+    return training_data_loader, testing_data_loader, optimizerG, optimizerD \
+            , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b
 
 
-def test():
+def test(training_data_loader, testing_data_loader, optimizerG, optimizerD\
+        ,netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt):
     avg_psnr = 0
     for batch in testing_data_loader:
         input, target = Variable(batch[0], volatile=True), Variable(batch[1], volatile=True)
@@ -179,9 +186,12 @@ def test():
         psnr = 10 * log10(1 / mse.data[0])
         avg_psnr += psnr
     print("===> Avg. PSNR: {:.4f} dB".format(avg_psnr / len(testing_data_loader)))
+    return training_data_loader, testing_data_loader, optimizerG, optimizerD \
+            , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b
 
 
-def checkpoint(epoch):
+def checkpoint(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD\
+        ,netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt):
     if not os.path.exists("checkpoint"):
         os.mkdir("checkpoint")
     if not os.path.exists(os.path.join("checkpoint", opt.dataset)):
@@ -191,13 +201,21 @@ def checkpoint(epoch):
     torch.save(netG, net_g_model_out_path)
     torch.save(netD, net_d_model_out_path)
     print("Checkpoint saved to {}".format("checkpoint" + opt.dataset))
+    return training_data_loader, testing_data_loader, optimizerG, optimizerD \
+            , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b
 
 
 if __name__ == '__main__':
+    Epoch_Num, training_data_loader, testing_data_loader, optimizerG, optimizerD \
+        , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt \
+        = InitNN()
     for epoch in range(Epoch_Num+1, opt.nEpochs + 1):
         #send error message by try-except
-        train(epoch)
-        #test()
+        train(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD
+              , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt)
+        #test(training_data_loader, testing_data_loader, optimizerG, optimizerD\
+            #,netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b)
         #if epoch % 50 == 0:
-        checkpoint(epoch)
+        checkpoint(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD
+                   , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt)
         print("Epoch {} Finished".format(epoch))
