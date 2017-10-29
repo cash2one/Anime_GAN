@@ -53,3 +53,28 @@ for image_name in image_filenames:
     out_img = out.data[0]
 
     save_img(out_img, "result/{}/{}/{}".format(opt.dataset, 'Epoch{}'.format(EpochNumber), image_name))
+
+#-----print out training data result-----#
+image_dir = "dataset/{}/train/a/".format(opt.dataset)
+image_filenames = [x for x in os.listdir(image_dir) if is_image_file(x)]
+
+transform_list = [transforms.ToTensor(),
+                  transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+
+transform = transforms.Compose(transform_list)
+if not os.path.exists(os.path.join("result", opt.dataset, 'Epoch{}_train'.format(EpochNumber))):
+    os.mkdir(os.path.join("result", opt.dataset, 'Epoch{}_train'.format(EpochNumber)))
+for image_name in image_filenames:
+    img = load_img(image_dir + image_name)
+    img = transform(img)
+    input = Variable(img, volatile=True).view(1,-1,360,640)
+
+    if opt.cuda:
+        netG = netG.cuda()
+        input = input.cuda()
+
+    out = netG(input)
+    out = out.cpu()
+    out_img = out.data[0]
+
+    save_img(out_img, "result/{}/{}/{}".format(opt.dataset, 'Epoch{}_train'.format(EpochNumber), image_name))

@@ -2,6 +2,7 @@ from __future__ import print_function
 import argparse
 import os
 from math import log10
+from multiprocessing import queues
 
 import torch
 import torch.nn as nn
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_nc', type=int, default=3, help='output image channels')
     parser.add_argument('--ngf', type=int, default=64, help='generator filters in first conv layer')
     parser.add_argument('--ndf', type=int, default=64, help='discriminator filters in first conv layer')
-    parser.add_argument('--lr', type=float, default=0.0002, help='Learning Rate. Default=0.002')
+    parser.add_argument('--lr', type=float, default=0.0002, help='Learning Rate. Default=0.0002')
     parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
     #parser.add_argument('--cuda', action='store_true', help='use cuda?')
     parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
@@ -103,6 +104,9 @@ if __name__ == '__main__':
 
 
 def train(epoch):
+    D_LOSS_THRESHOLD=0.001
+    SET_CHANGE_THRESHOLD=10
+    COUNT=0
     for iteration, batch in enumerate(training_data_loader, 1):
         # forward
         real_a_cpu, real_b_cpu = batch[0], batch[1]
@@ -150,7 +154,14 @@ def train(epoch):
         loss_g.backward()
 
         optimizerG.step()
-
+        """
+        if loss_d.data[0] < D_LOSS_THRESHOLD:
+            COUNT += 1
+        else:
+            COUNT = 0
+        if COUNT > SET_CHANGE_THRESHOLD:
+            #train_manager에게 dataset 변환을 요구
+        """
         print("===> Epoch[{}]({}/{}): Loss_D: {:.4f} Loss_G: {:.4f}".format(
             epoch, iteration, len(training_data_loader), loss_d.data[0], loss_g.data[0]))
 
