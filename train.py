@@ -220,7 +220,9 @@ def ANIME_GAN(q):
         checkpoint(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD
                    , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt)
         print("Epoch {} Finished".format(epoch))
-        if CH_DATA:
+        #if epoch % 10 == 0:
+            #q.put('TEST_DATA')
+        if epoch % 100 == 0:
             print('SEND MESSAGE to manager from trainer')
             q.put('CHANGE_DATASET')
             print('SENT MESSAGE to manager from trainer SUCCESS')

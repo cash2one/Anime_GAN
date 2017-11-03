@@ -11,10 +11,13 @@ def Kill_Zombie_Process():
     for p in list:
         if p.name() == 'python.exe' and p.pid != os.getpid():
             list_tokill.append(p)
-    if len(list)>0:
+    if len(list_tokill)>0:
+        print(list_tokill)
         for process in list_tokill:
-            print(process.name())
+            print(process.pid)
             os.kill(process.pid, 6)
+            print('{} Killed'.format(process.pid))
+            print(os.getpid())
     print('ALL Minor Process Terminated')
 
 
@@ -39,13 +42,15 @@ if __name__ == '__main__':
                     ('{} trash.py'.format('C:\\Users\\wogns\\AppData\\Local\\conda\\conda\\envs\\tensorflow\\python.exe')
                      ,close_fds=True)
     """
-    time_to_reset=3000
+    time_to_reset=1300
     time_to_print=10
     while True:
         #print('USING RAM : {}%'.format(psutil.virtual_memory().percent))
         if not q.empty():
             print(q.get())
             p.terminate()
+            while p.exitcode is None:
+                time.sleep(0.01)
             Kill_Zombie_Process()
             pick_old_data()
             random_data()
@@ -57,9 +62,11 @@ if __name__ == '__main__':
         if time.clock()>time_to_print:
             time_to_print+=10
             print('Running Time: {}sec'.format(time.clock()))
-        if time.clock()>time_to_reset:
-            time_to_reset += 3000
+        if time.clock() > time_to_reset or psutil.virtual_memory().percent > 80:
+            time_to_reset += 1300
             p.terminate()
+            while p.exitcode is None:
+                time.sleep(0.01)
             Kill_Zombie_Process()
             print("GAN_PAUSED at {}sec".format(time_to_print))
             time.sleep(10)

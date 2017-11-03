@@ -100,6 +100,8 @@ def random_data():
     f.close()
 
 if __name__ == '__main__':
-    for i in [3,6]:
+    #for i in [1, 3]:
         #pick_old_data()
-        new_dataset(i)
+        #new_dataset(i)
+    pick_old_data()
+    random_data()
