@@ -59,14 +59,32 @@ def InitNN():
 
     print('===> Building model')
     #------------------------------Code to continue training of the latest NN--------------------------#
-    net_filenames = [x for x in os.listdir('checkpoint/small_data/')]
+    net_filenames = [x for x in os.listdir('checkpoint/small_data2/')]
     Epoch_Num = 0
-    for i in range(1, 10001):
-        if 'netG_model_epoch_{}.pth'.format(i) in net_filenames:
-            netG = torch.load('checkpoint/small_data/netG_model_epoch_{}.pth'.format(i))
-            netD = torch.load('checkpoint/small_data/netD_model_epoch_{}.pth'.format(i))
-            print(i)
-            Epoch_Num = i
+    page_num = Epoch_Num
+    for j in range(1,50):
+        if 'netG_model_epoch_{}.pth'.format(page_num + j) in net_filenames:
+            netG = torch.load('checkpoint/small_data2/netG_model_epoch_{}.pth'.format(page_num + j))
+            netD = torch.load('checkpoint/small_data2/netD_model_epoch_{}.pth'.format(page_num + j))
+            print(page_num + j)
+            Epoch_Num = page_num + j
+        else:
+            break
+    for i in range(1,10001):
+        if 'netG_model_epoch_{}.pth'.format(i*50) in net_filenames:
+            netG = torch.load('checkpoint/small_data2/netG_model_epoch_{}.pth'.format(i*50))
+            netD = torch.load('checkpoint/small_data2/netD_model_epoch_{}.pth'.format(i*50))
+            print(i*50)
+            Epoch_Num = i*50
+        else:
+            break
+    page_num = Epoch_Num
+    for j in range(50):
+        if 'netG_model_epoch_{}.pth'.format(page_num+j) in net_filenames:
+            netG = torch.load('checkpoint/small_data2/netG_model_epoch_{}.pth'.format(page_num+j))
+            netD = torch.load('checkpoint/small_data2/netD_model_epoch_{}.pth'.format(page_num+j))
+            print(page_num+j)
+            Epoch_Num = page_num+j
         else:
             break
     #-------------------------------------------------------------------------------------------------#
@@ -196,11 +214,11 @@ def checkpoint(epoch, training_data_loader, testing_data_loader, optimizerG, opt
         os.mkdir("checkpoint")
     if not os.path.exists(os.path.join("checkpoint", opt.dataset)):
         os.mkdir(os.path.join("checkpoint", opt.dataset))
-    net_g_model_out_path = "checkpoint/{}/netG_model_epoch_{}.pth".format(opt.dataset, epoch)
-    net_d_model_out_path = "checkpoint/{}/netD_model_epoch_{}.pth".format(opt.dataset, epoch)
+    net_g_model_out_path = "checkpoint/{}2/netG_model_epoch_{}.pth".format(opt.dataset, epoch)
+    net_d_model_out_path = "checkpoint/{}2/netD_model_epoch_{}.pth".format(opt.dataset, epoch)
     torch.save(netG, net_g_model_out_path)
     torch.save(netD, net_d_model_out_path)
-    print("Checkpoint saved to {}".format("checkpoint" + opt.dataset))
+    print("Checkpoint saved to {}/{}2".format("checkpoint", opt.dataset))
 
 
 
@@ -220,8 +238,10 @@ def ANIME_GAN(q):
         checkpoint(epoch, training_data_loader, testing_data_loader, optimizerG, optimizerD
                    , netG, netD, criterionMSE, criterionL1, criterionGAN, real_a, real_b, opt)
         print("Epoch {} Finished".format(epoch))
-        #if epoch % 10 == 0:
-            #q.put('TEST_DATA')
+        if epoch % 50 == 0:
+            for i in range(1,50):
+                os.remove("checkpoint/{}2/netG_model_epoch_{}.pth".format(opt.dataset, epoch-i))
+                os.remove("checkpoint/{}2/netD_model_epoch_{}.pth".format(opt.dataset, epoch - i))
         if epoch % 100 == 0:
             print('SEND MESSAGE to manager from trainer')
             q.put('CHANGE_DATASET')

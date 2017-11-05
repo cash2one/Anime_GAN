@@ -21,7 +21,7 @@ def Kill_Zombie_Process():
     print('ALL Minor Process Terminated')
 
 
-net_filenames = [x for x in os.listdir('checkpoint/small_data/')]
+net_filenames = [x for x in os.listdir('checkpoint/small_data2/')]
 net_g_model = None
 net_d_model = None
 Epoch_Num = 0

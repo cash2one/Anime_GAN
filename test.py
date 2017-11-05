@@ -13,18 +13,33 @@ from util import is_image_file, load_img, save_img
 
 #-----test latest NN----------#
 def test():
-    net_filenames = [x for x in os.listdir('checkpoint/small_data/')]
+    net_filenames = [x for x in os.listdir('checkpoint/small_data2/')]
     EpochNumber = 0
-    for i in range(1, 1000):
-        if 'netG_model_epoch_{}.pth'.format(i) in net_filenames:
-            EpochNumber = i
+    page_num = EpochNumber
+    for j in range(1,50):
+        if 'netG_model_epoch_{}.pth'.format(page_num + j) in net_filenames:
+            print(page_num + j)
+            EpochNumber = page_num + j
+        else:
+            break
+    for i in range(1, 10001):
+        if 'netG_model_epoch_{}.pth'.format(i * 50) in net_filenames:
+            print(i * 50)
+            EpochNumber = i * 50
+        else:
+            break
+    page_num = EpochNumber
+    for j in range(50):
+        if 'netG_model_epoch_{}.pth'.format(page_num + j) in net_filenames:
+            print(page_num + j)
+            EpochNumber = page_num + j
         else:
             break
     #EpochNumber = 30
 
     parser = argparse.ArgumentParser(description='pix2pix-PyTorch-implementation')
     parser.add_argument('--dataset', type=str, default='small_data', help='facades')
-    parser.add_argument('--model', type=str, default='checkpoint/small_data/netG_model_epoch_{}.pth'.format(EpochNumber), help='model file to use')
+    parser.add_argument('--model', type=str, default='checkpoint/small_data2/netG_model_epoch_{}.pth'.format(EpochNumber), help='model file to use')
     parser.add_argument('--cuda', action='store_true',default= True, help='use cuda')
     opt = parser.parse_args()
     print(opt)
@@ -38,8 +53,8 @@ def test():
                       transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 
     transform = transforms.Compose(transform_list)
-    if not os.path.exists(os.path.join("result", opt.dataset, 'Epoch{}'.format(EpochNumber))):
-        os.mkdir(os.path.join("result", opt.dataset, 'Epoch{}'.format(EpochNumber)))
+    if not os.path.exists(os.path.join("result", opt.dataset+'2', 'Epoch{}'.format(EpochNumber))):
+        os.mkdir(os.path.join("result", opt.dataset+'2', 'Epoch{}'.format(EpochNumber)))
     for image_name in image_filenames:
         img = load_img(image_dir + image_name)
         img = transform(img)
@@ -53,7 +68,7 @@ def test():
         out = out.cpu()
         out_img = out.data[0]
 
-        save_img(out_img, "result/{}/{}/{}".format(opt.dataset, 'Epoch{}'.format(EpochNumber), image_name))
+        save_img(out_img, "result/{}2/{}/{}".format(opt.dataset, 'Epoch{}'.format(EpochNumber), image_name))
 
     #-----print out training data result-----#
     image_dir = "dataset/{}/train/a/".format(opt.dataset)
@@ -63,8 +78,8 @@ def test():
                       transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 
     transform = transforms.Compose(transform_list)
-    if not os.path.exists(os.path.join("result", opt.dataset, 'Epoch{}_train'.format(EpochNumber))):
-        os.mkdir(os.path.join("result", opt.dataset, 'Epoch{}_train'.format(EpochNumber)))
+    if not os.path.exists(os.path.join("result", opt.dataset+'2', 'Epoch{}_train'.format(EpochNumber))):
+        os.mkdir(os.path.join("result", opt.dataset+'2', 'Epoch{}_train'.format(EpochNumber)))
     for image_name in image_filenames:
         img = load_img(image_dir + image_name)
         img = transform(img)
@@ -78,7 +93,7 @@ def test():
         out = out.cpu()
         out_img = out.data[0]
 
-        save_img(out_img, "result/{}/{}/{}".format(opt.dataset, 'Epoch{}_train'.format(EpochNumber), image_name))
+        save_img(out_img, "result/{}2/{}/{}".format(opt.dataset, 'Epoch{}_train'.format(EpochNumber), image_name))
 
 if __name__ == '__main__' :
     test()
