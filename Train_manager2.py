@@ -3,7 +3,8 @@ import psutil
 from multiprocessing import Process, Queue, freeze_support
 import time
 from train import InitNN, train, test, checkpoint, ANIME_GAN
-from MakeClip import pick_old_data, random_data
+import MakeClip
+import MakeClip2
 
 def Kill_Zombie_Process():
     list = [p for p in psutil.process_iter()]
@@ -21,10 +22,11 @@ def Kill_Zombie_Process():
     print('ALL Minor Process Terminated')
 
 
-net_filenames = [x for x in os.listdir('checkpoint/small_data2/')]
+net_filenames = [x for x in os.listdir('checkpoint/small_data_L2/')]
 net_g_model = None
 net_d_model = None
 Epoch_Num = 0
+on_off = True
 q = Queue()
 if __name__ == '__main__':
     freeze_support()
@@ -42,7 +44,7 @@ if __name__ == '__main__':
                     ('{} trash.py'.format('C:\\Users\\wogns\\AppData\\Local\\conda\\conda\\envs\\tensorflow\\python.exe')
                      ,close_fds=True)
     """
-    time_to_reset=1300
+    time_to_reset=130000
     time_to_print=10
     while True:
         #print('USING RAM : {}%'.format(psutil.virtual_memory().percent))
@@ -52,8 +54,14 @@ if __name__ == '__main__':
             while p.exitcode is None:
                 time.sleep(0.01)
             Kill_Zombie_Process()
-            pick_old_data()
-            random_data()
+            if on_off:
+                MakeClip.pick_old_data()
+                MakeClip.random_data()
+                #on_off = not on_off
+            else:
+                MakeClip2.pick_old_data()
+                MakeClip2.random_data()
+                on_off = not on_off
             time_to_reset = 3000+time.clock()
             print("GAN_PAUSED at {}sec".format(time_to_print))
             time.sleep(10)

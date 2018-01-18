@@ -58,7 +58,8 @@ def new_dataset(i):
         NUM_FPS = cap.get(cv2.CAP_PROP_POS_FRAMES)
         time = cap.get(cv2.CAP_PROP_POS_MSEC)/1000
         #print('{}, {}'.format(NUM_FPS,time))
-
+        if(time > 20*60):
+            break;
         if(NUM_FPS%60 == 0 and time > 5*60 and time <=20*60):
             frame_color = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR)
             frame_color = np.array(frame_color)
@@ -100,8 +101,9 @@ def random_data():
     f.close()
 
 if __name__ == '__main__':
-    #for i in [1, 3]:
-        #pick_old_data()
-        #new_dataset(i)
-    pick_old_data()
-    random_data()
+    for i in range(1,14):
+        if i is not 2:
+            #pick_old_data()
+            new_dataset(i)
+    #pick_old_data()
+    #random_data()

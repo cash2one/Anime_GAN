@@ -36,7 +36,7 @@ def define_G(input_nc, output_nc, ngf, norm='batch', use_dropout=False, gpu_ids=
     netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9, gpu_ids=gpu_ids)
 
     if len(gpu_ids) > 0:
-        netG.cuda(device_id=gpu_ids[0])
+        netG.cuda(device=gpu_ids[0])
     netG.apply(weights_init)
     return netG
 
@@ -49,10 +49,10 @@ def define_D(input_nc, ndf, norm='batch', use_sigmoid=False, gpu_ids=[]):
     if use_gpu:
         assert(torch.cuda.is_available())
 
-    netD = NLayerDiscriminator(input_nc, ndf, n_layers=3, norm_layer=norm_layer, use_sigmoid=use_sigmoid, gpu_ids=gpu_ids)
+    netD = NLayerDiscriminator(input_nc, ndf, n_layers=6, norm_layer=norm_layer, use_sigmoid=use_sigmoid, gpu_ids=gpu_ids)
 
     if use_gpu:
-        netD.cuda(device_id=gpu_ids[0])
+        netD.cuda(device=gpu_ids[0])
     netD.apply(weights_init)
     return netD
 
@@ -75,6 +75,7 @@ class GANLoss(nn.Module):
         self.real_label_var = None
         self.fake_label_var = None
         self.Tensor = tensor
+
         if use_lsgan:
             self.loss = nn.MSELoss()
         else:
@@ -106,7 +107,7 @@ class GANLoss(nn.Module):
 # Defines the generator that consists of Resnet blocks between a few
 # downsampling/upsampling operations.
 class ResnetGenerator(nn.Module):
-    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, gpu_ids=[]):
+    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=12, gpu_ids=[]):
         assert(n_blocks >= 0)
         super(ResnetGenerator, self).__init__()
         self.input_nc = input_nc
